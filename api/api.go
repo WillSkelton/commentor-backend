@@ -20,12 +20,16 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRequests() {
+	// This tells the server to run the function homePage when a request is sent to
+	// "/" which is the home page
 	http.HandleFunc("/", homePage)
 
 	fmt.Println("Listening on port: 42201")
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
+// Start will setup the routes and their respective functions as well as telling the
+// server which port to listen on
 func Start() {
 	handleRequests()
 }
