@@ -24,7 +24,7 @@ func handleRequests() {
 	// "/" which is the home page
 	http.HandleFunc("/", homePage)
 
-	fmt.Println("Listening on port: 42201")
+	fmt.Printf("Listening on port: %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
