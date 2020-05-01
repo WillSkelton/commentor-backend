@@ -15,7 +15,7 @@ type SourceFile struct {
 	Path      string
 	FileName  string
 	lang      language
-	fileID    uint64
+	FileID    uint64
 	functions map[uint64]*function.Function
 }
 
@@ -25,14 +25,16 @@ type language struct {
 }
 
 // NewSourceFile Creates a new NewSourceFile object
-func NewSourceFile(path, filename string) (sf *SourceFile) {
+func NewSourceFile(path string) (sf *SourceFile) {
 	sf.Path = path
-	sf.FileName = filename
+	sf.FileName = filepath.Base(path)
+	sf.FileName = sf.FileName[:len(sf.FileName)-len(filepath.Ext(sf.FileName))]
 
 	sf.lang.extension = filepath.Ext(sf.Path)
 	sf.lang.formatFunc = formatters[sf.lang.extension]
 
-	sf.fileID = sfIDTracker
+	sf.FileID = sfIDTracker
+	sf.functions = make(map[uint64]*function.Function, 0)
 	sf.GatherFunctions()
 
 	sfIDTracker++

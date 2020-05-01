@@ -1,6 +1,7 @@
 package api
 
 import (
+	"commentor-backend/lib/driver"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,22 +15,51 @@ const (
 	`
 )
 
+var (
+	singleton *driver.Driver
+)
+
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: /homepage")
+	enableCors(&w)
 	fmt.Fprintf(w, tempHomePage)
 }
 
+func openDirectory(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	keys, ok := r.URL.Query()["wd"]
+
+	if !ok || len(keys[0]) < 1 {
+		log.Println("Url Param 'wd' is missing")
+		return
+	}
+
+	// Query()["key"] will return an array of items,
+	// we only want the single item.
+	wd := keys[0]
+
+	fmt.Println("Url Param 'wd' is: " + string(wd))
+	singleton = driver.NewDriver(wd)
+
+}
+
 func handleRequests() {
-	// This tells the server to run the function homePage when a request is sent to
-	// "/" which is the home page
 	http.HandleFunc("/", homePage)
+	http.HandleFunc("/opendirectory", openDirectory)
 
 	fmt.Printf("Listening on port: %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+
 }
 
 // Start will setup the routes and their respective functions as well as telling the
 // server which port to listen on
 func Start() {
 	handleRequests()
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }

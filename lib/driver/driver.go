@@ -1,6 +1,11 @@
 package driver
 
-import "commentor-backend/lib/sourcefile"
+import (
+	"commentor-backend/lib/sourcefile"
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
 // Driver is the singleton that keeps track of the whole directory
 type Driver struct {
@@ -13,11 +18,20 @@ func NewDriver(wd string) (d *Driver) {
 	d = &Driver{}
 	d.WorkingDirectory = wd
 
+	d.FileManager = make(map[uint64]*sourcefile.SourceFile, 0)
+
 	d.gatherFiles()
 
 	return
 }
 
 func (d *Driver) gatherFiles() {
+	filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
+		fmt.Println(path)
+		sf := sourcefile.NewSourceFile(path)
+
+		d.FileManager[sf.FileID] = sf
+		return nil
+	})
 
 }
