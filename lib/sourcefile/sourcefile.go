@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -24,21 +25,35 @@ type SourceFile struct {
 type language struct {
 	extension  string
 	formatFunc (func(string) string)
+	parseFunc  (func(string) map[uint64]*function.Function)
 }
 
 // NewSourceFile Creates a new NewSourceFile object
 func NewSourceFile(path string) (sf *SourceFile, err error) {
+	// allocate memory
 	sf = &SourceFile{}
+
+	// set path
 	sf.Path = path
 
-	sf.FileName = filepath.Base(path)
-	sf.FileName = sf.FileName[:len(sf.FileName)-len(filepath.Ext(sf.FileName))]
+	// get file extension
+	ext := strings.Replace(filepath.Ext(sf.Path), ".", "", 1)
+	sf.lang.extension = ext
 
-	sf.lang.extension = filepath.Ext(sf.Path)
+	// get filename
+	sf.FileName = filepath.Base(path)
+
+	// strip off ext
+	sf.FileName = sf.FileName[:len(sf.FileName)-len(ext)]
+
+	// set functions
 	sf.lang.formatFunc = formatters[sf.lang.extension]
+	sf.lang.parseFunc = parsers[sf.lang.extension]
 
 	sf.FileID = sfIDTracker
-	sf.functions = make(map[uint64]*function.Function, 0)
+
+	//
+	sf.functions = make(map[uint64]*function.Function)
 	if err = sf.GatherFunctions(); err != nil {
 		return nil, err
 	}
@@ -49,7 +64,7 @@ func NewSourceFile(path string) (sf *SourceFile, err error) {
 
 // GatherFunctions will traverse a file and fill the file's function map with function objects
 func (sf *SourceFile) GatherFunctions() (err error) {
-	fmt.Println(sf)
+	// fmt.Println(sf)
 
 	if _, err := os.Stat(sf.Path); os.IsNotExist(err) {
 		return err
@@ -60,7 +75,9 @@ func (sf *SourceFile) GatherFunctions() (err error) {
 		return err
 	}
 
-	fmt.Println(string(data))
+	// fmt.Println(string(data))
+
+	sf.functions = (sf.lang.parseFunc(string(data)))
 
 	return nil
 }

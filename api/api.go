@@ -45,9 +45,9 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, value := range singleton.FileManager {
-		fmt.Println(value)
-	}
+	// for _, value := range singleton.FileManager {
+	// 	fmt.Println(value)
+	// }
 
 }
 
