@@ -2,7 +2,6 @@ package driver
 
 import (
 	"commentor-backend/lib/sourcefile"
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -18,7 +17,7 @@ func NewDriver(wd string) (d *Driver) {
 	d = &Driver{}
 	d.WorkingDirectory = wd
 
-	d.FileManager = make(map[uint64]*sourcefile.SourceFile, 0)
+	d.FileManager = make(map[uint64]*sourcefile.SourceFile)
 
 	d.gatherFiles()
 
@@ -27,10 +26,13 @@ func NewDriver(wd string) (d *Driver) {
 
 func (d *Driver) gatherFiles() {
 	filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
-		fmt.Println(path)
-		sf := sourcefile.NewSourceFile(path)
 
-		d.FileManager[sf.FileID] = sf
+		if !info.IsDir() {
+			sf := &sourcefile.SourceFile{}
+			sf = sourcefile.NewSourceFile(path)
+
+			d.FileManager[sf.FileID] = sf
+		}
 		return nil
 	})
 

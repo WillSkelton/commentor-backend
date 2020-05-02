@@ -35,12 +35,14 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Query()["key"] will return an array of items,
-	// we only want the single item.
 	wd := keys[0]
 
 	fmt.Println("Url Param 'wd' is: " + string(wd))
 	singleton = driver.NewDriver(wd)
+
+	for _, value := range singleton.FileManager {
+		fmt.Println(value)
+	}
 
 }
 

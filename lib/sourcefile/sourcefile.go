@@ -26,7 +26,9 @@ type language struct {
 
 // NewSourceFile Creates a new NewSourceFile object
 func NewSourceFile(path string) (sf *SourceFile) {
+	sf = &SourceFile{}
 	sf.Path = path
+
 	sf.FileName = filepath.Base(path)
 	sf.FileName = sf.FileName[:len(sf.FileName)-len(filepath.Ext(sf.FileName))]
 
@@ -43,5 +45,18 @@ func NewSourceFile(path string) (sf *SourceFile) {
 
 // GatherFunctions will traverse a file and fill the file's function map with function objects
 func (sf *SourceFile) GatherFunctions() {
-	fmt.Println()
+	fmt.Print()
+}
+
+func (sf SourceFile) String() string {
+	str := ""
+	str += fmt.Sprintf("---------------------------------------\n")
+	str += fmt.Sprintf("Path: %v\n", sf.Path)
+	str += fmt.Sprintf("FileName: %v\n", sf.FileName)
+	str += fmt.Sprintf("extension: %v\n", sf.lang.extension)
+	str += fmt.Sprintf("FileID: %v\n", sf.FileID)
+	str += fmt.Sprintf("functions: %v\n", len(sf.functions))
+	str += fmt.Sprintf("---------------------------------------\n")
+
+	return str
 }
