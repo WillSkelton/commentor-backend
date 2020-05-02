@@ -3,6 +3,8 @@ package sourcefile
 import (
 	"commentor-backend/lib/function"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -25,7 +27,7 @@ type language struct {
 }
 
 // NewSourceFile Creates a new NewSourceFile object
-func NewSourceFile(path string) (sf *SourceFile) {
+func NewSourceFile(path string) (sf *SourceFile, err error) {
 	sf = &SourceFile{}
 	sf.Path = path
 
@@ -37,17 +39,33 @@ func NewSourceFile(path string) (sf *SourceFile) {
 
 	sf.FileID = sfIDTracker
 	sf.functions = make(map[uint64]*function.Function, 0)
-	sf.GatherFunctions()
+	if err = sf.GatherFunctions(); err != nil {
+		return nil, err
+	}
 
 	sfIDTracker++
 	return
 }
 
 // GatherFunctions will traverse a file and fill the file's function map with function objects
-func (sf *SourceFile) GatherFunctions() {
-	fmt.Print()
+func (sf *SourceFile) GatherFunctions() (err error) {
+	fmt.Println(sf)
+
+	if _, err := os.Stat(sf.Path); os.IsNotExist(err) {
+		return err
+	}
+
+	var data []byte
+	if data, err = ioutil.ReadFile(sf.Path); err != nil {
+		return err
+	}
+
+	fmt.Println(string(data))
+
+	return nil
 }
 
+// String() implements the Stinger interface so a SourceFile can be all dolled up before it's printed
 func (sf SourceFile) String() string {
 	str := ""
 	str += fmt.Sprintf("---------------------------------------\n")

@@ -38,7 +38,12 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	wd := keys[0]
 
 	fmt.Println("Url Param 'wd' is: " + string(wd))
-	singleton = driver.NewDriver(wd)
+
+	var err error
+	if singleton, err = driver.NewDriver(wd); err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	for _, value := range singleton.FileManager {
 		fmt.Println(value)
