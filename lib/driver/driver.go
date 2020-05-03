@@ -13,19 +13,19 @@ type Driver struct {
 }
 
 // NewDriver makes a new Driver object
-func NewDriver(wd string) (d *Driver, err error) {
+func NewDriver(wd string) (d *Driver) {
 	d = &Driver{}
 	d.WorkingDirectory = wd
 
 	d.FileManager = make(map[uint64]*sourcefile.SourceFile)
 
-	if err = d.gatherFiles(); err != nil {
-		return nil, err
-	}
-	return d, nil
+	// if err = d.gatherFiles(); err != nil {
+	// 	return nil, err
+	// }
+	return
 }
 
-func (d *Driver) gatherFiles() (err error) {
+func (d *Driver) GatherFiles() (err error) {
 
 	if err = filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
 		// TODO: Add check to make it not look at files who's types are unsupported
