@@ -26,8 +26,9 @@ func NewDriver(wd string) (d *Driver, err error) {
 }
 
 func (d *Driver) gatherFiles() (err error) {
-	if err = filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
 
+	if err = filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
+		// TODO: Add check to make it not look at files who's types are unsupported
 		if !info.IsDir() {
 			sf := &sourcefile.SourceFile{}
 			if sf, err = sourcefile.NewSourceFile(path); err != nil {

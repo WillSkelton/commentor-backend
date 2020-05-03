@@ -2,6 +2,7 @@ package api
 
 import (
 	"commentor-backend/lib/driver"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,7 +32,7 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	keys, ok := r.URL.Query()["wd"]
 
 	if !ok || len(keys[0]) < 1 {
-		log.Println("Url Param 'wd' is missing")
+		http.Error(w, "Url Param 'wd' is missing", 400)
 		return
 	}
 
@@ -41,13 +42,20 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	if singleton, err = driver.NewDriver(wd); err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	// for _, value := range singleton.FileManager {
-	// 	fmt.Println(value)
-	// }
+	var res []byte
+
+	if res, err = json.Marshal(singleton.FileManager[0].Functions); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	fmt.Println(string(res))
+	// fmt.Println(singleton.FileManager[0].Functions[63])
+	fmt.Fprintf(w, "%v", (string(res)))
 
 }
 

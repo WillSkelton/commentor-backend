@@ -76,7 +76,6 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 		}
 
 		// fmt.Println("--------------------------------------------------")
-		// fmt.Printf("'%v' ----> %v\n", line, state)
 
 		switch state {
 		case commentSearch:
@@ -96,9 +95,8 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 			f := function.NewFunction(comment, functionContent, "noNameYet", 0, startLine, endLine)
 
 			// add that to our map
-			functions[uint64(idx)] = f
+			functions[uint64(f.FuncID)] = f
 
-			fmt.Println(f)
 			// reset our state machine
 			startLine = 0
 			comment = ""
