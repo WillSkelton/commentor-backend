@@ -15,7 +15,8 @@ const (
 )
 
 var (
-	cFuncMatch, _ = regexp.Compile("(?m)[a-zA-Z0-9\\\\[\\]\\*]+ [a-zA-Z0-9\\[\\]\\*]+\\(([a-zA-Z0-9\\[\\]\\,*]+ [a-zA-Z0-9\\[\\]\\*]+)*\\)")
+	cFuncMatch, _ = regexp.Compile("(?m)[a-zA-Z0-9\\[\\]\\*]+ [a-zA-Z0-9\\[\\]\\*]+\\(([a-zA-Z0-9\\[\\]\\,*]+ [a-zA-Z0-9\\[\\]\\*]+)*\\)")
+	// word = [a-zA-Z0-9\\[\\]\\*]+
 	// this matches: word word((word word,?)*) the ',' is optional with following ?
 	// word word(word word, word *word[], word word, ..., word word)
 	// word word(word word)
