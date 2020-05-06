@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -40,6 +41,12 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	wd := keys[0]
 
 	singleton.WorkingDirectory = wd
+
+	var err error
+	if _, err = os.Stat(wd); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
 	// fmt.Println("Working Directory is: " + string(wd))
 
 	// if singleton = driver.NewDriver(wd); err != nil {
@@ -47,7 +54,6 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	var err error
 	if err = singleton.GatherFiles(); err != nil {
 		http.Error(w, err.Error(), 500)
 		return

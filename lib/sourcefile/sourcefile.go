@@ -48,8 +48,8 @@ func NewSourceFile(path string) (sf *SourceFile, err error) {
 	sf.FileName = strings.ReplaceAll(sf.FileName, filepath.Ext(sf.FileName), "")
 
 	// set Functions
-	sf.Lang.formatFunc = formatters[sf.Lang.Extension]
-	sf.Lang.parseFunc = parsers[sf.Lang.Extension]
+	sf.Lang.formatFunc = Formatters[sf.Lang.Extension]
+	sf.Lang.parseFunc = Parsers[sf.Lang.Extension]
 
 	sf.FileID = sfIDTracker
 
