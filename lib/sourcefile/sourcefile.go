@@ -17,12 +17,12 @@ var (
 type SourceFile struct {
 	Path      string
 	FileName  string
-	lang      language
+	Lang      Language
 	FileID    uint64
 	Functions map[uint64]*function.Function
 }
 
-type language struct {
+type Language struct {
 	Extension  string
 	formatFunc (func(string) string)
 	parseFunc  (func(string) map[uint64]*function.Function)
@@ -39,17 +39,17 @@ func NewSourceFile(path string) (sf *SourceFile, err error) {
 
 	// get file extension
 	ext := strings.Replace(filepath.Ext(sf.Path), ".", "", 1)
-	sf.lang.Extension = ext
+	sf.Lang.Extension = ext
 
 	// get filename
 	sf.FileName = filepath.Base(path)
 
 	// strip off ext
-	sf.FileName = sf.FileName[:len(sf.FileName)-len(ext)]
+	sf.FileName = strings.ReplaceAll(sf.FileName, filepath.Ext(sf.FileName), "")
 
 	// set Functions
-	sf.lang.formatFunc = formatters[sf.lang.Extension]
-	sf.lang.parseFunc = parsers[sf.lang.Extension]
+	sf.Lang.formatFunc = formatters[sf.Lang.Extension]
+	sf.Lang.parseFunc = parsers[sf.Lang.Extension]
 
 	sf.FileID = sfIDTracker
 
@@ -75,7 +75,7 @@ func (sf *SourceFile) GatherFunctions() (err error) {
 		return err
 	}
 
-	sf.Functions = sf.lang.parseFunc(string(data))
+	sf.Functions = sf.Lang.parseFunc(string(data))
 
 	return nil
 }
@@ -86,7 +86,7 @@ func (sf SourceFile) String() string {
 	str += fmt.Sprintf("---------------------------------------\n")
 	str += fmt.Sprintf("Path: %v\n", sf.Path)
 	str += fmt.Sprintf("FileName: %v\n", sf.FileName)
-	str += fmt.Sprintf("Extension: %v\n", sf.lang.Extension)
+	str += fmt.Sprintf("Extension: %v\n", sf.Lang.Extension)
 	str += fmt.Sprintf("FileID: %v\n", sf.FileID)
 	str += fmt.Sprintf("Functions: %v\n", len(sf.Functions))
 	str += fmt.Sprintf("---------------------------------------\n")

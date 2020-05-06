@@ -75,8 +75,6 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 			comment = ""
 		}
 
-		// fmt.Println("--------------------------------------------------")
-
 		switch state {
 		case commentSearch:
 			continue

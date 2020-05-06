@@ -42,7 +42,6 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	singleton.WorkingDirectory = wd
 	// fmt.Println("Working Directory is: " + string(wd))
 
-	fmt.Println("========================================================")
 	// if singleton = driver.NewDriver(wd); err != nil {
 	// 	http.Error(w, err.Error(), 500)
 	// 	return
@@ -55,7 +54,7 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var res []byte
-	if res, err = json.Marshal(singleton.FileManager[0].Functions); err != nil {
+	if res, err = json.Marshal(singleton.FileManager); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
