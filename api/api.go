@@ -2,6 +2,7 @@ package api
 
 import (
 	"commentor-backend/lib/driver"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,7 +17,8 @@ const (
 )
 
 var (
-	singleton *driver.Driver
+	// singleton *driver.Driver
+	singleton = driver.NewDriver("")
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -31,23 +33,35 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	keys, ok := r.URL.Query()["wd"]
 
 	if !ok || len(keys[0]) < 1 {
-		log.Println("Url Param 'wd' is missing")
+		http.Error(w, "Url Param 'wd' is missing", 400)
 		return
 	}
 
 	wd := keys[0]
 
-	fmt.Println("Url Param 'wd' is: " + string(wd))
+	singleton.WorkingDirectory = wd
+	// fmt.Println("Working Directory is: " + string(wd))
+
+	// if singleton = driver.NewDriver(wd); err != nil {
+	// 	http.Error(w, err.Error(), 500)
+	// 	return
+	// }
 
 	var err error
-	if singleton, err = driver.NewDriver(wd); err != nil {
-		log.Fatal(err)
+	if err = singleton.GatherFiles(); err != nil {
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	for _, value := range singleton.FileManager {
-		fmt.Println(value)
+	var res []byte
+	if res, err = json.Marshal(singleton.FileManager); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
 	}
+
+	// fmt.Println(string(res))
+	// fmt.Println(singleton.FileManager[0].Functions[63])
+	fmt.Fprintf(w, "%v", (string(res)))
 
 }
 

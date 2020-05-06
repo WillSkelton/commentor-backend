@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -16,29 +17,43 @@ var (
 type SourceFile struct {
 	Path      string
 	FileName  string
-	lang      language
+	Lang      Language
 	FileID    uint64
-	functions map[uint64]*function.Function
+	Functions map[uint64]*function.Function
 }
 
-type language struct {
-	extension  string
+type Language struct {
+	Extension  string
 	formatFunc (func(string) string)
+	parseFunc  (func(string) map[uint64]*function.Function)
 }
 
 // NewSourceFile Creates a new NewSourceFile object
 func NewSourceFile(path string) (sf *SourceFile, err error) {
+
+	// allocate memory
 	sf = &SourceFile{}
+
+	// set path
 	sf.Path = path
 
-	sf.FileName = filepath.Base(path)
-	sf.FileName = sf.FileName[:len(sf.FileName)-len(filepath.Ext(sf.FileName))]
+	// get file extension
+	ext := strings.Replace(filepath.Ext(sf.Path), ".", "", 1)
+	sf.Lang.Extension = ext
 
-	sf.lang.extension = filepath.Ext(sf.Path)
-	sf.lang.formatFunc = formatters[sf.lang.extension]
+	// get filename
+	sf.FileName = filepath.Base(path)
+
+	// strip off ext
+	sf.FileName = strings.ReplaceAll(sf.FileName, filepath.Ext(sf.FileName), "")
+
+	// set Functions
+	sf.Lang.formatFunc = formatters[sf.Lang.Extension]
+	sf.Lang.parseFunc = parsers[sf.Lang.Extension]
 
 	sf.FileID = sfIDTracker
-	sf.functions = make(map[uint64]*function.Function, 0)
+
+	sf.Functions = make(map[uint64]*function.Function)
 	if err = sf.GatherFunctions(); err != nil {
 		return nil, err
 	}
@@ -49,7 +64,7 @@ func NewSourceFile(path string) (sf *SourceFile, err error) {
 
 // GatherFunctions will traverse a file and fill the file's function map with function objects
 func (sf *SourceFile) GatherFunctions() (err error) {
-	fmt.Println(sf)
+	// fmt.Println(sf)
 
 	if _, err := os.Stat(sf.Path); os.IsNotExist(err) {
 		return err
@@ -60,7 +75,7 @@ func (sf *SourceFile) GatherFunctions() (err error) {
 		return err
 	}
 
-	fmt.Println(string(data))
+	sf.Functions = sf.Lang.parseFunc(string(data))
 
 	return nil
 }
@@ -71,9 +86,9 @@ func (sf SourceFile) String() string {
 	str += fmt.Sprintf("---------------------------------------\n")
 	str += fmt.Sprintf("Path: %v\n", sf.Path)
 	str += fmt.Sprintf("FileName: %v\n", sf.FileName)
-	str += fmt.Sprintf("extension: %v\n", sf.lang.extension)
+	str += fmt.Sprintf("Extension: %v\n", sf.Lang.Extension)
 	str += fmt.Sprintf("FileID: %v\n", sf.FileID)
-	str += fmt.Sprintf("functions: %v\n", len(sf.functions))
+	str += fmt.Sprintf("Functions: %v\n", len(sf.Functions))
 	str += fmt.Sprintf("---------------------------------------\n")
 
 	return str
