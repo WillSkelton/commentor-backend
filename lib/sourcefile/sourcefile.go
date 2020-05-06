@@ -22,6 +22,7 @@ type SourceFile struct {
 	Functions map[uint64]*function.Function
 }
 
+// Language contains all the information about a supported language
 type Language struct {
 	Extension  string
 	formatFunc (func(string) string)
