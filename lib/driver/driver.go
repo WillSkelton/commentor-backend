@@ -2,6 +2,7 @@ package driver
 
 import (
 	"commentor-backend/lib/sourcefile"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -36,6 +37,10 @@ func (d *Driver) GatherFiles() (err error) {
 			}
 
 			d.FileManager[sf.FileID] = sf
+			fmt.Printf("[GatherFiles]: sf=%+v\n", sf)
+			for i, f := range sf.Functions {
+				fmt.Printf("[GatherFiles]: func[%d]=\n%+v\n", i, f)
+			}
 		}
 		return nil
 	}); err != nil {
