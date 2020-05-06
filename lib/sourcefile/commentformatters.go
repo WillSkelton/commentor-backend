@@ -7,7 +7,10 @@ import (
 
 var (
 	formatters = map[string](func(string) string){
-		"go": goComment,
+		"go":  goComment,
+		"c":   cComment,
+		"cpp": cppComment,
+		"py":  pyComment,
 	}
 )
 
@@ -20,5 +23,16 @@ func goComment(str string) (comment string) {
 
 		comment += fmt.Sprintf("// %v\n", line)
 	}
+	return
+}
+
+func cComment(str string) (comment string) {
+	fmt.Println("Hello World!")
+	return
+}
+func cppComment(str string) (comment string) {
+	return
+}
+func pyComment(str string) (comment string) {
 	return
 }
