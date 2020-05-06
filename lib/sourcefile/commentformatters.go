@@ -3,6 +3,7 @@ package sourcefile
 import (
 	"commentor-backend/lib/function"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -14,17 +15,22 @@ const (
 )
 
 var (
+	cFuncMatch, _ = regexp.Compile("(?m)[a-zA-Z0-9\\\\[\\]\\*]+ [a-zA-Z0-9\\[\\]\\*]+\\(([a-zA-Z0-9\\[\\]\\,*]+ [a-zA-Z0-9\\[\\]\\*]+)*\\)")
+	// this matches: word word((word word,?)*) the ',' is optional with following ?
+	// word word(word word, word *word[], word word, ..., word word)
+	// word word(word word)
+	// word word()
+
 	formatters = map[string](func(string) string){
 		"go":  goComment,
 		"c":   cComment,
-		"cpp": cppComment,
-		"py":  pyComment,
+		"cpp": cComment,
 	}
 
 	parsers = map[string](func(string) map[uint64]*function.Function){
 		"go":  ParseGo,
 		"c":   ParseC,
-		"cpp": ParseCpp,
+		"cpp": ParseC,
 	}
 )
 
@@ -44,13 +50,8 @@ func cComment(str string) (comment string) {
 	fmt.Println("[cComment]: Hello World!")
 	return
 }
-func cppComment(str string) (comment string) {
-	return
-}
-func pyComment(str string) (comment string) {
-	return
-}
 
+// ParseGo : parses go code
 func ParseGo(code string) (functions map[uint64]*function.Function) {
 
 	codeLines := strings.Split(code, "\n")
@@ -104,6 +105,7 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 		case funcEnd:
 			// add the closing brace
 			functionContent += fmt.Sprintf("%v\n", line)
+			endLine = uint64(idx)
 
 			// create a new function object with the information we got
 			f := function.NewFunction(comment, functionContent, "noNameYet", 0, startLine, endLine)
@@ -126,10 +128,66 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 	return
 }
 
+// ParseC : parses C code
 func ParseC(code string) (functions map[uint64]*function.Function) {
-	fmt.Println("[ParseC]: Hello World!")
-	return
-}
-func ParseCpp(code string) (functions map[uint64]*function.Function) {
+
+	codeLines := strings.Split(code, "\n")
+	functions = make(map[uint64]*function.Function)
+
+	var (
+		startLine       uint64
+		endLine         uint64
+		comment         string
+		functionContent string
+		state           = commentSearch
+	)
+
+	for idx, line := range codeLines {
+		if strings.HasPrefix(line, "//") {
+			state = commentStart
+		} else if cFuncMatch.MatchString(line) {
+			if state == commentSearch {
+				// If we're coming from commentSearch, that means that we didn't have a comment so we set startLine to idx
+				startLine = uint64(idx + 1)
+			}
+			state = funcStart
+		} else if strings.Contains(line, "struct") {
+			if state == commentSearch {
+				startLine = uint64(idx + 1)
+			}
+			state = funcStart
+		} else if strings.HasPrefix(line, "}") {
+			state = funcEnd
+		} else if !(strings.HasPrefix(line, "//")) && state != funcStart {
+			state = commentSearch
+			comment = ""
+		}
+
+		switch state {
+		case commentSearch:
+			continue
+		case commentStart:
+			startLine = uint64(idx + 1)
+			comment += fmt.Sprintf("%s\n", line)
+		case funcStart:
+			functionContent += fmt.Sprintf("%v\n", line)
+		case funcEnd:
+			endLine = uint64(idx + 1)
+			// add the closing brace
+			functionContent += fmt.Sprintf("%v\n", line)
+			// create a new function object with the information we got
+			f := function.NewFunction(comment, functionContent, "noNameYet", 0, startLine, endLine)
+			// add that to our map
+			functions[uint64(f.FuncID)] = f
+			// reset our state machine
+			startLine = 0
+			comment = ""
+			functionContent = ""
+			state = commentSearch
+
+		default:
+			continue
+		}
+	}
 	return
 }
