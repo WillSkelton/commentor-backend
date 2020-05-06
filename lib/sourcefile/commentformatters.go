@@ -22,7 +22,9 @@ var (
 	}
 
 	parsers = map[string](func(string) map[uint64]*function.Function){
-		"go": ParseGo,
+		"go":  ParseGo,
+		"c":   ParseC,
+		"cpp": ParseCpp,
 	}
 )
 
@@ -39,6 +41,7 @@ func goComment(str string) (comment string) {
 }
 
 func cComment(str string) (comment string) {
+	fmt.Println("[cComment]: Hello World!")
 	return
 }
 func cppComment(str string) (comment string) {
@@ -120,5 +123,13 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 
 	}
 
+	return
+}
+
+func ParseC(code string) (functions map[uint64]*function.Function) {
+	fmt.Println("[ParseC]: Hello World!")
+	return
+}
+func ParseCpp(code string) (functions map[uint64]*function.Function) {
 	return
 }
