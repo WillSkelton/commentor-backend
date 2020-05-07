@@ -93,7 +93,7 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 			startLine = lineIdx
 			comment += fmt.Sprintf("%v\n", line)
 		case funcStart:
-			startLine = uint64(idx)
+			startLine = lineIdx
 			functionContent += fmt.Sprintf("%v\n", line)
 
 		case funcEnd:
