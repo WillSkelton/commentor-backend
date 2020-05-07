@@ -22,13 +22,13 @@ var (
 	// word word(word word)
 	// word word()
 
-	formatters = map[string](func(string) string){
+	Formatters = map[string](func(string) string){
 		"go":  goComment,
 		"c":   cComment,
 		"cpp": cComment,
 	}
 
-	parsers = map[string](func(string) map[uint64]*function.Function){
+	Parsers = map[string](func(string) map[uint64]*function.Function){
 		"go":  ParseGo,
 		"c":   ParseC,
 		"cpp": ParseC,
@@ -82,7 +82,7 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 		if strings.HasPrefix(line, "//") {
 			state = commentStart
 
-		} else if strings.Contains(line, "func") {
+		} else if strings.Contains(line, "func") || strings.Contains(line, "type") {
 
 			// we found the function keyword so we transition to funcStart state
 			if state == commentSearch {
