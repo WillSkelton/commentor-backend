@@ -61,12 +61,6 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 
 		} else if strings.Contains(line, "func") || strings.Contains(line, "type") {
 
-			if lineIdx <= 1 {
-				endLine = lineIdx
-			} else {
-				endLine = lineIdx - 1
-			}
-
 			// we found the function keyword so we transition to funcStart state
 			if state == commentSearch {
 				// If we're coming from commentSearch, that means that we didn't have a comment so we set startLine to idx
@@ -77,6 +71,7 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 			state = funcStart
 		} else if strings.HasPrefix(line, "}") {
 			state = funcEnd
+			endLine = lineIdx
 
 		} else if !(strings.HasPrefix(line, "//")) && state != funcStart {
 			state = commentSearch
@@ -90,10 +85,8 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 		case commentSearch:
 			continue
 		case commentStart:
-			startLine = lineIdx
 			comment += fmt.Sprintf("%v\n", line)
 		case funcStart:
-			startLine = lineIdx
 			functionContent += fmt.Sprintf("%v\n", line)
 
 		case funcEnd:
