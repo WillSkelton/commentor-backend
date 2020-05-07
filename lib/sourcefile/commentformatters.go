@@ -48,7 +48,14 @@ func goComment(str string) (comment string) {
 }
 
 func cComment(str string) (comment string) {
-	fmt.Println("[cComment]: Hello World!")
+	commentLines := strings.Split(strings.ReplaceAll(str, "\r", ""), "\n")
+	for _, line := range commentLines {
+		if line == "" {
+			continue
+		}
+
+		comment += fmt.Sprintf("// %v\n", line)
+	}
 	return
 }
 
@@ -146,13 +153,14 @@ func ParseC(code string) (functions map[uint64]*function.Function) {
 	for idx, line := range codeLines {
 		if strings.HasPrefix(line, "//") {
 			state = commentStart
-		} else if cFuncMatch.MatchString(line) {
+		} else if cFuncMatch.MatchString(line) ||
+			(strings.Contains(line, "template") && strings.Contains(line, "typename")) {
 			if state == commentSearch {
 				// If we're coming from commentSearch, that means that we didn't have a comment so we set startLine to idx
 				startLine = uint64(idx + 1)
 			}
 			state = funcStart
-		} else if strings.Contains(line, "struct") {
+		} else if strings.Contains(line, "struct") && strings.Contains(line, "{") {
 			if state == commentSearch {
 				startLine = uint64(idx + 1)
 			}
