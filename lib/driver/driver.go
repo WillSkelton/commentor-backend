@@ -2,7 +2,6 @@ package driver
 
 import (
 	"commentor-backend/lib/sourcefile"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,10 +23,10 @@ func NewDriver(wd string) (d *Driver) {
 	return
 }
 
+// GatherFiles will walk the working directory of a file and pick out the accepted files from it
 func (d *Driver) GatherFiles() (err error) {
 
 	if err = filepath.Walk(d.WorkingDirectory, func(path string, info os.FileInfo, err error) error {
-		// TODO: Add check to make it not look at files who's types are unsupported
 		if !info.IsDir() {
 			extension := strings.ReplaceAll(filepath.Ext(info.Name()), ".", "")
 
@@ -38,10 +37,7 @@ func (d *Driver) GatherFiles() (err error) {
 				}
 
 				d.FileManager[sf.FileID] = sf
-			} else {
-				fmt.Printf("'%v' files are yucky. We don't do that around here.\n", extension)
 			}
-
 		}
 		return nil
 	}); err != nil {

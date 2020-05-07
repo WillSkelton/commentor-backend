@@ -50,36 +50,47 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 	)
 
 	for idx, line := range codeLines {
-		// Searching for comment or "func" keyword
+		lineIdx := uint64(idx + 1)
+		// Searching for comment or "func"/"type" keywords
 		strings.ReplaceAll(line, "\r", "")
 
 		// We found a comment. Transition state to commentStart
-		if strings.HasPrefix(line, "//") {
+		if strings.HasPrefix(line, "//") && state != commentStart {
 			state = commentStart
+			startLine = lineIdx
 
 		} else if strings.Contains(line, "func") || strings.Contains(line, "type") {
+
+			if lineIdx <= 1 {
+				endLine = lineIdx
+			} else {
+				endLine = lineIdx - 1
+			}
 
 			// we found the function keyword so we transition to funcStart state
 			if state == commentSearch {
 				// If we're coming from commentSearch, that means that we didn't have a comment so we set startLine to idx
-				startLine = uint64(idx)
+				startLine = lineIdx
+
 			}
 			// otherwise, we're coming from commentStart, that means that we had a comment so we leave startLine as it is
 			state = funcStart
 		} else if strings.HasPrefix(line, "}") {
-
 			state = funcEnd
 
 		} else if !(strings.HasPrefix(line, "//")) && state != funcStart {
 			state = commentSearch
 			comment = ""
+			startLine = 0
+			endLine = 0
+
 		}
 
 		switch state {
 		case commentSearch:
 			continue
 		case commentStart:
-			startLine = uint64(idx)
+			startLine = lineIdx
 			comment += fmt.Sprintf("%v\n", line)
 		case funcStart:
 			startLine = uint64(idx)
@@ -104,7 +115,6 @@ func ParseGo(code string) (functions map[uint64]*function.Function) {
 		default:
 			continue
 		}
-
 	}
 
 	return
