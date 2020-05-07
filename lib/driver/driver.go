@@ -38,6 +38,12 @@ func (d *Driver) GatherFiles() (err error) {
 					return err
 				}
 
+				fmt.Printf("[Gather Files->Walk] sf=\n%+v\n", sf)
+				for i, f := range sf.Functions {
+					fmt.Printf("[func-comment %d]: %s\n", i, f.Comment)
+					fmt.Printf("[func-content %d]: %s\n", i, f.Contents)
+				}
+
 				d.FileManager[sf.FileID] = sf
 			} else {
 				fmt.Printf("'%v' files are yucky. We don't do that around here.\n", extension)
