@@ -49,6 +49,7 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	if _, err = os.Stat(wd); err != nil {
+		fmt.Println("1: " + err.Error())
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -60,12 +61,14 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	if err = singleton.GatherFiles(); err != nil {
+		fmt.Println("2: " + err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	var res []byte
 	if res, err = json.Marshal(singleton.FileManager); err != nil {
+		fmt.Println("3: " + err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -80,26 +83,41 @@ func updateFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: /updatefunc")
 	enableCors(&w)
 
-	var stuff ReqData
+	var (
+		stuff ReqData
+		res   []byte
+		err   error
+	)
 
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&stuff); err != nil {
+	if err = decoder.Decode(&stuff); err != nil {
 		fmt.Println(err.Error())
 		http.Error(w, err.Error(), 404)
 		return
 	}
+	// fmt.Println(file)
+	// fmt.Println(function)
 
-	fmt.Println(stuff.Comment)
-	fmt.Println(stuff.FuncID)
-	fmt.Println(stuff.FileID)
+	file := singleton.FileManager[stuff.FileID]
+	// file.PrintNewComment(stuff.Comment)
+	function := singleton.FileManager[stuff.FileID].Functions[stuff.FuncID]
 
-	// fmt.Println(singleton.FileManager[stuff.FileID])
-	fmt.Println(singleton.FileManager[stuff.FileID].Path)
-	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].Comment)
-	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].StartLine)
-	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].EndLine)
+	if err = file.SaveFile(stuff.FuncID, stuff.Comment); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
+	}
 
-	fmt.Fprintf(w, "Yeet")
+	function.Comment = stuff.Comment
+
+	if res, err = json.Marshal(file); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	fmt.Fprintf(w, "%v", string(res))
+
 }
 
 func handleRequests() {
