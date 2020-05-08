@@ -9,6 +9,12 @@ import (
 	"os"
 )
 
+type ReqData struct {
+	Comment string `json:"comment"`
+	FileID  uint64 `json:"fileID"`
+	FuncID  uint64 `json:"funcID"`
+}
+
 const (
 	port         = "42201"
 	tempHomePage = `
@@ -18,7 +24,6 @@ const (
 )
 
 var (
-	// singleton *driver.Driver
 	singleton = driver.NewDriver("")
 )
 
@@ -71,9 +76,36 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func updateFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: /updatefunc")
+	enableCors(&w)
+
+	var stuff ReqData
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&stuff); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	fmt.Println(stuff.Comment)
+	fmt.Println(stuff.FuncID)
+	fmt.Println(stuff.FileID)
+
+	// fmt.Println(singleton.FileManager[stuff.FileID])
+	fmt.Println(singleton.FileManager[stuff.FileID].Path)
+	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].Comment)
+	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].StartLine)
+	fmt.Println(singleton.FileManager[stuff.FileID].Functions[stuff.FuncID].EndLine)
+
+	fmt.Fprintf(w, "Yeet")
+}
+
 func handleRequests() {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/opendirectory", openDirectory)
+	http.HandleFunc("/updatefunc", updateFunc)
 
 	fmt.Printf("Listening on port: %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
@@ -89,4 +121,5 @@ func Start() {
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	(*w).Header().Set("Content-Type", "application/json")
 }
