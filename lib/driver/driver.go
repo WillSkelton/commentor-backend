@@ -2,6 +2,7 @@ package driver
 
 import (
 	"commentor-backend/lib/sourcefile"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,6 +35,12 @@ func (d *Driver) GatherFiles() (err error) {
 				sf := &sourcefile.SourceFile{}
 				if sf, err = sourcefile.NewSourceFile(path); err != nil {
 					return err
+				}
+
+				fmt.Printf("[Gather Files->Walk] sf=\n%+v\n", sf)
+				for i, f := range sf.Functions {
+					fmt.Printf("[func-comment %d]: %s\n", i, f.Comment)
+					fmt.Printf("[func-content %d]: %s\n", i, f.Contents)
 				}
 
 				d.FileManager[sf.FileID] = sf
