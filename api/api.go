@@ -40,7 +40,7 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 	wd := keys[0]
 
-	singleton.WorkingDirectory = wd
+	singleton = driver.NewDriver(wd)
 
 	var err error
 	if _, err = os.Stat(wd); err != nil {
