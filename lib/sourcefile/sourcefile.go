@@ -82,6 +82,7 @@ func (sf *SourceFile) GatherFunctions() (err error) {
 }
 
 // String() implements the Stinger interface so a SourceFile can be all dolled up before it's printed
+// yeet
 func (sf SourceFile) String() string {
 	str := ""
 	str += fmt.Sprintf("---------------------------------------\n")
@@ -93,4 +94,47 @@ func (sf SourceFile) String() string {
 	str += fmt.Sprintf("---------------------------------------\n")
 
 	return str
+}
+
+func (sf *SourceFile) SaveFile(funcID uint64, newCommentString string) (err error) {
+
+	function := sf.Functions[funcID]
+	startIdx := function.StartLine - 1
+	endIdx := function.EndLine + 1
+
+	var newFile []string
+
+	// Open the file
+	var data []byte
+	if data, err = ioutil.ReadFile(sf.Path); err != nil {
+		return err
+	}
+
+	dataLines := strings.Split(string(data), "\n")
+
+	if newCommentString == "" {
+		newFile = append(newFile, dataLines[:startIdx]...)
+		newFile = append(newFile, function.Contents)
+		newFile = append(newFile, dataLines[endIdx:]...)
+	} else {
+
+		newComment := sf.Lang.formatFunc(newCommentString)
+		newComment = newComment[:len(newComment)-1]
+
+		newFile = append(newFile, dataLines[:startIdx]...)
+		newFile = append(newFile, newComment)
+		newFile = append(newFile, function.Contents)
+		newFile = append(newFile, dataLines[endIdx:]...)
+	}
+
+	if err = ioutil.WriteFile(sf.Path, []byte(strings.Join(newFile, "\n")), 0644); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (sf *SourceFile) PrintNewComment(str string) {
+	fmt.Printf("'%v'", sf.Lang.formatFunc(str))
 }

@@ -9,6 +9,12 @@ import (
 	"os"
 )
 
+type ReqData struct {
+	Comment string `json:"comment"`
+	FileID  uint64 `json:"fileID"`
+	FuncID  uint64 `json:"funcID"`
+}
+
 const (
 	port         = "42201"
 	tempHomePage = `
@@ -18,7 +24,6 @@ const (
 )
 
 var (
-	// singleton *driver.Driver
 	singleton = driver.NewDriver("")
 )
 
@@ -44,6 +49,7 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	if _, err = os.Stat(wd); err != nil {
+		fmt.Println("1: " + err.Error())
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -55,12 +61,14 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	if err = singleton.GatherFiles(); err != nil {
+		fmt.Println("2: " + err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	var res []byte
 	if res, err = json.Marshal(singleton.FileManager); err != nil {
+		fmt.Println("3: " + err.Error())
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -71,9 +79,51 @@ func openDirectory(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func updateFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: /updatefunc")
+	enableCors(&w)
+
+	var (
+		stuff ReqData
+		res   []byte
+		err   error
+	)
+
+	decoder := json.NewDecoder(r.Body)
+	if err = decoder.Decode(&stuff); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 404)
+		return
+	}
+	// fmt.Println(file)
+	// fmt.Println(function)
+
+	file := singleton.FileManager[stuff.FileID]
+	// file.PrintNewComment(stuff.Comment)
+	function := singleton.FileManager[stuff.FileID].Functions[stuff.FuncID]
+
+	if err = file.SaveFile(stuff.FuncID, stuff.Comment); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	function.Comment = stuff.Comment
+
+	if res, err = json.Marshal(file); err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	fmt.Fprintf(w, "%v", string(res))
+
+}
+
 func handleRequests() {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/opendirectory", openDirectory)
+	http.HandleFunc("/updatefunc", updateFunc)
 
 	fmt.Printf("Listening on port: %v\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
@@ -89,4 +139,5 @@ func Start() {
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	(*w).Header().Set("Content-Type", "application/json")
 }

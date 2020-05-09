@@ -172,14 +172,11 @@ func ParseC(code string) (functions map[uint64]*function.Function) {
 		case commentSearch:
 			continue
 		case commentStart:
-			fmt.Printf("[ParseC]: commentStart=%d\n", idx+1)
 			startLine = uint64(idx + 1)
 			comment += fmt.Sprintf("%s\n", line)
 		case funcStart:
-			fmt.Printf("[ParseC]: funcStart=%d\n", idx+1)
 			functionContent += fmt.Sprintf("%v\n", line)
 		case funcEnd:
-			fmt.Printf("[ParseC]: funcEnd=%d\n", idx+1)
 			endLine = uint64(idx + 1)
 			// add the closing brace
 			functionContent += fmt.Sprintf("%v\n", line)
@@ -245,16 +242,13 @@ func ParseJs(code string) (functions map[uint64]*function.Function) {
 		case commentSearch:
 			continue
 		case commentStart:
-			fmt.Printf("[ParseC]: commentStart=%d\n", idx+1)
 			startLine = uint64(idx)
 			comment += fmt.Sprintf("%v\n", line)
 		case funcStart:
-			fmt.Printf("[ParseC]: funcStart=%d\n", idx+1)
 			startLine = uint64(idx)
 			functionContent += fmt.Sprintf("%v\n", line)
 
 		case funcEnd:
-			fmt.Printf("[ParseC]: funcEnd=%d\n", idx+1)
 			// add the closing brace
 			functionContent += fmt.Sprintf("%v\n", line)
 			endLine = uint64(idx)
